@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown预览 - 在线工具箱</title>
+    <meta name="description" content="实时预览Markdown渲染效果">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            min-height: 500px;
+        }
+        @media (max-width: 768px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .preview-content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .preview-content h1, .preview-content h2, .preview-content h3 {
+            margin: 16px 0 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .preview-content code {
+            background: #F3F4F6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .preview-content pre {
+            background: #1F2937;
+            color: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .preview-content pre code {
+            background: none;
+            color: inherit;
+        }
+        .preview-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 16px;
+            margin: 16px 0;
+            color: #6B7280;
+        }
+        .preview-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+        }
+        .preview-content th, .preview-content td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .preview-content th {
+            background: #F3F4F6;
+        }
+        .preview-content img {
+            max-width: 100%;
+        }
+        .preview-content a {
+            color: var(--primary);
+        }
+        .preview-content ul, .preview-content ol {
+            padding-left: 24px;
+        }
+    </style>
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">Markdown预览</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="editor-container">
+                <div class="tool-section" style="display:flex;flex-direction:column">
+                    <h3>Markdown源码</h3>
+                    <textarea id="editor" style="flex:1;min-height:400px" oninput="render()"># Markdown预览
+
+这是一段**粗体**文字，这是一段*斜体*文字。
+
+## 列表
+
+- 项目一
+- 项目二
+- 项目三
+
+## 代码
+
+```javascript
+function hello() {
+    console.log("Hello World!");
+}
+```
+
+## 引用
+
+> 这是一段引用文字
+
+## 表格
+
+| 名称 | 说明 |
+|------|------|
+| 工具1 | 功能1 |
+| 工具2 | 功能2 |
+
+[链接示例](https://example.com)</textarea>
+                </div>
+                <div class="tool-section" style="display:flex;flex-direction:column">
+                    <h3>预览效果</h3>
+                    <div id="preview" class="preview-content" style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:8px;min-height:400px"></div>
+                </div>
+            </div>
+            <div class="btn-group" style="justify-content:center">
+                <button class="btn btn-secondary" onclick="copyHtml()">复制HTML</button>
+                <button class="btn btn-secondary" onclick="copyMd()">复制Markdown</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        function render() {
+            const md = document.getElementById('editor').value;
+            document.getElementById('preview').innerHTML = marked.parse(md);
+        }
+
+        function copyHtml() {
+            navigator.clipboard.writeText(document.getElementById('preview').innerHTML);
+            showToast('HTML已复制');
+        }
+
+        function copyMd() {
+            navigator.clipboard.writeText(document.getElementById('editor').value);
+            showToast('Markdown已复制');
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        render();
+    </script>
+</body>
+</html>

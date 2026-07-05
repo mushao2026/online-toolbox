@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL编解码 - 在线工具箱</title>
+    <meta name="description" content="URL编码与解码转换">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">URL编解码</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="tool-section">
+                <h3>URL编码</h3>
+                <div class="two-col">
+                    <div>
+                        <label>原始文本：</label>
+                        <textarea id="plainText" placeholder="输入要编码的URL或文本..." oninput="encodeUrl()"></textarea>
+                    </div>
+                    <div>
+                        <label>编码结果：</label>
+                        <textarea id="encodedUrl" placeholder="URL编码结果..." oninput="decodeUrl()"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="encodeUrl()">编码 →</button>
+                    <button class="btn btn-secondary" onclick="decodeUrl()">← 解码</button>
+                    <button class="btn btn-secondary" onclick="copyResult()">复制结果</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h3>URL解析</h3>
+                <div style="margin-bottom:16px">
+                    <label>输入URL：</label>
+                    <input type="text" id="urlInput" placeholder="https://example.com/path?name=value#hash" oninput="parseUrl()">
+                </div>
+                <div id="urlParts" class="result" style="display:none"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        function encodeUrl() {
+            document.getElementById('encodedUrl').value = encodeURIComponent(document.getElementById('plainText').value);
+        }
+
+        function decodeUrl() {
+            try {
+                document.getElementById('plainText').value = decodeURIComponent(document.getElementById('encodedUrl').value);
+            } catch (e) {}
+        }
+
+        function parseUrl() {
+            const urlStr = document.getElementById('urlInput').value;
+            if (!urlStr) {
+                document.getElementById('urlParts').style.display = 'none';
+                return;
+            }
+
+            try {
+                const url = new URL(urlStr);
+                const params = Array.from(url.searchParams.entries()).map(([k, v]) => `  ${k} = ${v}`).join('\n');
+                document.getElementById('urlParts').style.display = 'block';
+                document.getElementById('urlParts').textContent = `协议：${url.protocol}
+主机：${url.host}
+路径：${url.pathname}
+查询参数：${url.search || '(无)'}
+${params ? '\n参数详情：\n' + params : ''}
+哈希：${url.hash || '(无)'}`;
+            } catch (e) {
+                document.getElementById('urlParts').style.display = 'block';
+                document.getElementById('urlParts').textContent = '无效的URL格式';
+            }
+        }
+
+        function copyResult() {
+            navigator.clipboard.writeText(document.getElementById('encodedUrl').value);
+            showToast('已复制');
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+    </script>
+</body>
+</html>

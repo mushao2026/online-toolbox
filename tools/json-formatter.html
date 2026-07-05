@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON格式化工具 - 在线工具箱</title>
+    <meta name="description" content="免费在线JSON格式化、压缩、验证工具，支持语法高亮">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">JSON格式化</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="tool-section">
+                <h3>输入JSON</h3>
+                <textarea id="input" placeholder='粘贴你的JSON数据，例如：\n{"name":"张三","age":25,"hobbies":["编程","读书"]}'></textarea>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="formatJSON()">格式化</button>
+                    <button class="btn btn-secondary" onclick="compressJSON()">压缩</button>
+                    <button class="btn btn-secondary" onclick="validateJSON()">验证</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+                    <button class="btn btn-secondary" onclick="copyResult()">复制结果</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h3>输出结果</h3>
+                <div id="output" class="result">等待输入...</div>
+            </div>
+
+            <div class="tool-section">
+                <h3>设置</h3>
+                <div class="options-group">
+                    <div class="option-item">
+                        <label for="indent">缩进空格数：</label>
+                        <select id="indent">
+                            <option value="2" selected>2</option>
+                            <option value="4">4</option>
+                            <option value="tab">Tab</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        const input = document.getElementById('input');
+        const output = document.getElementById('output');
+        const indentSelect = document.getElementById('indent');
+
+        function getIndent() {
+            const val = indentSelect.value;
+            return val === 'tab' ? '\t' : parseInt(val);
+        }
+
+        function formatJSON() {
+            try {
+                const json = JSON.parse(input.value);
+                output.innerHTML = syntaxHighlight(JSON.stringify(json, null, getIndent()));
+            } catch (e) {
+                output.innerHTML = `<span style="color:#DC2626">错误：${e.message}</span>`;
+            }
+        }
+
+        function compressJSON() {
+            try {
+                const json = JSON.parse(input.value);
+                output.textContent = JSON.stringify(json);
+            } catch (e) {
+                output.innerHTML = `<span style="color:#DC2626">错误：${e.message}</span>`;
+            }
+        }
+
+        function validateJSON() {
+            try {
+                JSON.parse(input.value);
+                output.innerHTML = '<span style="color:#059669">✓ 有效的JSON格式</span>';
+            } catch (e) {
+                output.innerHTML = `<span style="color:#DC2626">✗ 无效的JSON：${e.message}</span>`;
+            }
+        }
+
+        function clearAll() {
+            input.value = '';
+            output.textContent = '等待输入...';
+        }
+
+        function copyResult() {
+            const text = output.textContent;
+            if (text && text !== '等待输入...') {
+                navigator.clipboard.writeText(text);
+                showToast('已复制到剪贴板');
+            }
+        }
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'code-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'code-key';
+                    } else {
+                        cls = 'code-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'code-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'code-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+    </script>
+</body>
+</html>

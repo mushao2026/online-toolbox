@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正则表达式测试 - 在线工具箱</title>
+    <meta name="description" content="在线测试正则表达式，实时匹配高亮">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">正则表达式测试</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="tool-section">
+                <h3>正则表达式</h3>
+                <div style="display:flex;gap:10px;margin-bottom:16px">
+                    <span style="font-size:1.5rem;color:#6B7280">/</span>
+                    <input type="text" id="regex" placeholder="输入正则表达式..." oninput="testRegex()" style="font-family:monospace">
+                    <span style="font-size:1.5rem;color:#6B7280">/</span>
+                    <input type="text" id="flags" value="g" placeholder="标志" style="width:80px;font-family:monospace" oninput="testRegex()">
+                </div>
+                <div class="options-group">
+                    <div class="option-item">
+                        <input type="checkbox" id="flagG" checked onchange="updateFlags()">
+                        <label for="flagG">全局匹配 (g)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="flagI" onchange="updateFlags()">
+                        <label for="flagI">忽略大小写 (i)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="flagM" onchange="updateFlags()">
+                        <label for="flagM">多行模式 (m)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <h3>测试文本</h3>
+                <textarea id="testText" placeholder="输入要测试的文本..." oninput="testRegex()">Hello World! 你好世界！
+test123 example@email.com
+2024-01-15 https://example.com</textarea>
+            </div>
+
+            <div class="tool-section">
+                <h3>匹配结果</h3>
+                <div id="highlighted" class="result" style="min-height:100px"></div>
+                <div id="matchInfo" style="margin-top:16px;color:#6B7280"></div>
+            </div>
+
+            <div class="tool-section">
+                <h3>常用正则表达式</h3>
+                <div style="display:grid;gap:8px">
+                    <button class="btn btn-secondary" onclick="setRegex('[\\w.-]+@[\\w.-]+\\.\\w+')">邮箱地址</button>
+                    <button class="btn btn-secondary" onclick="setRegex('https?://[^\\s]+')">URL链接</button>
+                    <button class="btn btn-secondary" onclick="setRegex('1[3-9]\\d{9}')">手机号码</button>
+                    <button class="btn btn-secondary" onclick="setRegex('\\d{4}-\\d{2}-\\d{2}')">日期格式</button>
+                    <button class="btn btn-secondary" onclick="setRegex('[\\u4e00-\\u9fa5]+')">中文字符</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        function updateFlags() {
+            let flags = '';
+            if (document.getElementById('flagG').checked) flags += 'g';
+            if (document.getElementById('flagI').checked) flags += 'i';
+            if (document.getElementById('flagM').checked) flags += 'm';
+            document.getElementById('flags').value = flags;
+            testRegex();
+        }
+
+        function setRegex(pattern) {
+            document.getElementById('regex').value = pattern;
+            testRegex();
+        }
+
+        function testRegex() {
+            const pattern = document.getElementById('regex').value;
+            const flags = document.getElementById('flags').value;
+            const text = document.getElementById('testText').value;
+            const highlighted = document.getElementById('highlighted');
+            const matchInfo = document.getElementById('matchInfo');
+
+            if (!pattern) {
+                highlighted.innerHTML = escapeHtml(text);
+                matchInfo.textContent = '';
+                return;
+            }
+
+            try {
+                const regex = new RegExp(pattern, flags);
+                const matches = [];
+                let match;
+
+                // 收集所有匹配
+                if (flags.includes('g')) {
+                    while ((match = regex.exec(text)) !== null) {
+                        matches.push({ index: match.index, length: match[0].length, text: match[0] });
+                        if (match[0].length === 0) regex.lastIndex++;
+                    }
+                } else {
+                    match = regex.exec(text);
+                    if (match) {
+                        matches.push({ index: match.index, length: match[0].length, text: match[0] });
+                    }
+                }
+
+                // 高亮显示
+                let result = '';
+                let lastIndex = 0;
+                matches.forEach(m => {
+                    result += escapeHtml(text.slice(lastIndex, m.index));
+                    result += `<span style="background:#FEF08A;padding:2px 4px;border-radius:3px">${escapeHtml(m.text)}</span>`;
+                    lastIndex = m.index + m.length;
+                });
+                result += escapeHtml(text.slice(lastIndex));
+                highlighted.innerHTML = result || '无匹配';
+
+                // 显示匹配信息
+                matchInfo.textContent = `找到 ${matches.length} 个匹配`;
+                if (matches.length > 0) {
+                    matchInfo.textContent += `：${matches.map(m => `"${m.text}"`).join(', ')}`;
+                }
+            } catch (e) {
+                highlighted.innerHTML = `<span style="color:#DC2626">正则表达式错误：${e.message}</span>`;
+                matchInfo.textContent = '';
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        testRegex();
+    </script>
+</body>
+</html>

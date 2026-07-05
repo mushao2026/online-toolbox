@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字统计工具 - 在线工具箱</title>
+    <meta name="description" content="在线统计字数、字符数、段落数、阅读时间">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">文字统计</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="tool-section">
+                <h3>输入文字</h3>
+                <textarea id="input" placeholder="在此输入或粘贴文字..." oninput="countText()"></textarea>
+            </div>
+
+            <div class="tool-section">
+                <h3>统计结果</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px">
+                    <div style="text-align:center;padding:16px;background:#F3F4F6;border-radius:8px">
+                        <div style="font-size:2rem;font-weight:bold;color:#4F46E5" id="chars">0</div>
+                        <div style="color:#6B7280">字符数</div>
+                    </div>
+                    <div style="text-align:center;padding:16px;background:#F3F4F6;border-radius:8px">
+                        <div style="font-size:2rem;font-weight:bold;color:#4F46E5" id="charsNoSpace">0</div>
+                        <div style="color:#6B7280">不含空格</div>
+                    </div>
+                    <div style="text-align:center;padding:16px;background:#F3F4F6;border-radius:8px">
+                        <div style="font-size:2rem;font-weight:bold;color:#4F46E5" id="words">0</div>
+                        <div style="color:#6B7280">单词/词语</div>
+                    </div>
+                    <div style="text-align:center;padding:16px;background:#F3F4F6;border-radius:8px">
+                        <div style="font-size:2rem;font-weight:bold;color:#4F46E5" id="lines">0</div>
+                        <div style="color:#6B7280">行数</div>
+                    </div>
+                    <div style="text-align:center;padding:16px;background:#F3F4F6;border-radius:8px">
+                        <div style="font-size:2rem;font-weight:bold;color:#4F46E5" id="paragraphs">0</div>
+                        <div style="color:#6B7280">段落数</div>
+                    </div>
+                    <div style="text-align:center;padding:16px;background:#F3F4F6;border-radius:8px">
+                        <div style="font-size:2rem;font-weight:bold;color:#4F46E5" id="readTime">0</div>
+                        <div style="color:#6B7280">阅读时间(分钟)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        function countText() {
+            const text = document.getElementById('input').value;
+
+            document.getElementById('chars').textContent = text.length;
+            document.getElementById('charsNoSpace').textContent = text.replace(/\s/g, '').length;
+
+            // 中文按字分，英文按词分
+            const chineseChars = (text.match(/[一-龥]/g) || []).length;
+            const englishWords = (text.match(/[a-zA-Z]+/g) || []).length;
+            document.getElementById('words').textContent = chineseChars + englishWords;
+
+            document.getElementById('lines').textContent = text ? text.split('\n').length : 0;
+            document.getElementById('paragraphs').textContent = text ? text.split(/\n\s*\n/).filter(p => p.trim()).length : 0;
+
+            // 阅读时间：中文300字/分钟，英文200词/分钟
+            const readTime = Math.ceil((chineseChars / 300) + (englishWords / 200));
+            document.getElementById('readTime').textContent = readTime || 0;
+        }
+    </script>
+</body>
+</html>

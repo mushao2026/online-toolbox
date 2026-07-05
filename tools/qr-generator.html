@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码生成器 - 在线工具箱</title>
+    <meta name="description" content="免费在线生成二维码，支持自定义颜色和大小">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">二维码生成器</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="two-col">
+                <div class="tool-section">
+                    <h3>输入内容</h3>
+                    <textarea id="input" placeholder="输入文本或网址..." style="min-height:120px"></textarea>
+
+                    <div style="margin-top:16px">
+                        <label>尺寸：</label>
+                        <select id="size">
+                            <option value="200">200x200</option>
+                            <option value="300" selected>300x300</option>
+                            <option value="400">400x400</option>
+                            <option value="500">500x500</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top:16px">
+                        <label>前景色：</label>
+                        <input type="color" id="fgColor" value="#000000">
+                    </div>
+
+                    <div style="margin-top:16px">
+                        <label>背景色：</label>
+                        <input type="color" id="bgColor" value="#ffffff">
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generate()">生成二维码</button>
+                        <button class="btn btn-secondary" onclick="download()">下载图片</button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>预览</h3>
+                    <div class="preview-area">
+                        <canvas id="qr-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('qr-canvas');
+
+        function generate() {
+            const text = document.getElementById('input').value;
+            if (!text) {
+                alert('请输入内容');
+                return;
+            }
+
+            const size = parseInt(document.getElementById('size').value);
+            const fg = document.getElementById('fgColor').value;
+            const bg = document.getElementById('bgColor').value;
+
+            QRCode.toCanvas(canvas, text, {
+                width: size,
+                margin: 2,
+                color: {
+                    dark: fg,
+                    light: bg
+                }
+            });
+        }
+
+        function download() {
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // 自动生成示例
+        document.getElementById('input').value = 'https://example.com';
+        generate();
+    </script>
+</body>
+</html>

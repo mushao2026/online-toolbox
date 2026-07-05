@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片压缩工具 - 在线工具箱</title>
+    <meta name="description" content="免费在线压缩图片，支持JPG/PNG/WebP，减小文件大小">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="tool-page">
+    <header class="tool-header">
+        <div class="container">
+            <a href="../index.html" class="back-link">← 返回</a>
+            <h1 class="tool-title">图片压缩</h1>
+        </div>
+    </header>
+
+    <main class="tool-content">
+        <div class="container">
+            <div class="tool-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <p>点击或拖拽图片到此处上传</p>
+                    <p style="font-size:0.85rem;color:#9CA3AF">支持 JPG、PNG、WebP 格式</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none">
+                </div>
+            </div>
+
+            <div class="tool-section" id="compressSection" style="display:none">
+                <h3>压缩设置</h3>
+                <div class="options-group">
+                    <div class="option-item">
+                        <label>压缩质量：</label>
+                        <input type="range" id="quality" min="10" max="100" value="80" style="width:200px">
+                        <span id="qualityValue">80%</span>
+                    </div>
+                    <div class="option-item">
+                        <label>输出格式：</label>
+                        <select id="format">
+                            <option value="same">保持原格式</option>
+                            <option value="jpeg">JPEG</option>
+                            <option value="png">PNG</option>
+                            <option value="webp">WebP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="tool-section">
+                        <h3>原图预览</h3>
+                        <div class="preview-area">
+                            <img id="originalPreview">
+                        </div>
+                        <p id="originalSize" style="text-align:center;margin-top:8px"></p>
+                    </div>
+                    <div class="tool-section">
+                        <h3>压缩后预览</h3>
+                        <div class="preview-area">
+                            <canvas id="compressedPreview"></canvas>
+                        </div>
+                        <p id="compressedSize" style="text-align:center;margin-top:8px"></p>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="compress()">压缩图片</button>
+                    <button class="btn btn-secondary" onclick="download()">下载压缩图</button>
+                </div>
+
+                <p id="savings" style="text-align:center;margin-top:16px;font-weight:500"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 在线工具箱</p>
+        </div>
+    </footer>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const qualitySlider = document.getElementById('quality');
+        const qualityValue = document.getElementById('qualityValue');
+        let originalFile = null;
+
+        // 拖拽上传
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        qualitySlider.addEventListener('input', (e) => {
+            qualityValue.textContent = e.target.value + '%';
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('请上传图片文件');
+                return;
+            }
+
+            originalFile = file;
+            document.getElementById('compressSection').style.display = 'block';
+            document.getElementById('originalSize').textContent = `大小：${formatSize(file.size)}`;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('originalPreview').src = e.target.result;
+                compress();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function compress() {
+            if (!originalFile) return;
+
+            const quality = parseInt(qualitySlider.value) / 100;
+            const format = document.getElementById('format').value;
+            const canvas = document.getElementById('compressedPreview');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                const outputFormat = format === 'same' ? originalFile.type : `image/${format}`;
+                canvas.toBlob((blob) => {
+                    document.getElementById('compressedSize').textContent = `大小：${formatSize(blob.size)}`;
+                    const savings = ((1 - blob.size / originalFile.size) * 100).toFixed(1);
+                    document.getElementById('savings').textContent = `节省了 ${savings}% 的空间`;
+                    document.getElementById('savings').style.color = savings > 0 ? '#059669' : '#DC2626';
+                }, outputFormat, quality);
+            };
+            img.src = document.getElementById('originalPreview').src;
+        }
+
+        function download() {
+            const canvas = document.getElementById('compressedPreview');
+            const format = document.getElementById('format').value;
+            const ext = format === 'same' ? originalFile.name.split('.').pop() : format;
+            const link = document.createElement('a');
+            link.download = `compressed.${ext}`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>
